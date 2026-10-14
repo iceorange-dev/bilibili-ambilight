@@ -3,16 +3,16 @@
 // @name:zh-TW   Bilibili 環境光
 // @name:zh-CN   Bilibili 环境光
 // @name:en      Ambient light for Bilibili
-// @namespace    https://github.com/lonelymeko/bilibili-ambilight
+// @namespace    https://github.com/iceorange-dev/bilibili-ambilight
 // @version      0.1.3
 // @description  在 Bilibili 影片周圍加上環境光（Ambilight），看影片更有沉浸感！（非官方，改編自 Wessel Kroos 的 Ambient light for YouTube）
 // @description:zh-CN  在 Bilibili 视频周围加上环境光（Ambilight），看视频更有沉浸感！（非官方，改编自 Wessel Kroos 的 Ambient light for YouTube）
 // @description:en  Adds ambient light (ambilight) around the video you are watching on Bilibili. Unofficial port of Ambient light for YouTube by Wessel Kroos.
 // @author       iceorange-dev (Bilibili port), Wessel Kroos (original Ambient light for YouTube)
 // @license      MIT
-// @homepageURL  https://github.com/lonelymeko/bilibili-ambilight
-// @supportURL   https://github.com/lonelymeko/bilibili-ambilight/issues
-// @icon         https://github.com/lonelymeko/bilibili-ambilight/raw/main/src/images/icon-128.png
+// @homepageURL  https://github.com/iceorange-dev/bilibili-ambilight
+// @supportURL   https://github.com/iceorange-dev/bilibili-ambilight/issues
+// @icon         https://github.com/iceorange-dev/bilibili-ambilight/raw/main/src/images/icon-128.png
 // @match        https://www.bilibili.com/video/*
 // @match        https://www.bilibili.com/bangumi/play/*
 // @match        https://www.bilibili.com/list/*

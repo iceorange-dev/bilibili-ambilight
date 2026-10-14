@@ -14,8 +14,8 @@
   },
   "type": "module",
   "userscript": {
-    "namespace": "https://github.com/lonelymeko/bilibili-ambilight",
-    "homepage": "https://github.com/lonelymeko/bilibili-ambilight",
+    "namespace": "https://github.com/iceorange-dev/bilibili-ambilight",
+    "homepage": "https://github.com/iceorange-dev/bilibili-ambilight",
     "outputFile": "./bilibili-ambilight.user.js"
   },
   "scripts": {

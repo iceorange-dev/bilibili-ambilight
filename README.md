@@ -22,11 +22,16 @@
 
 1. 安裝使用者腳本管理器：[Tampermonkey](https://www.tampermonkey.net/)（Chrome / Edge / Firefox）、[Violentmonkey](https://violentmonkey.github.io/) 或 Greasemonkey
 2. 安裝腳本：
-   - 直接點安裝網址：`https://raw.githubusercontent.com/lonelymeko/bilibili-ambilight/main/bilibili-ambilight.user.js`
+   - 直接點安裝網址（Raw）：`https://raw.githubusercontent.com/iceorange-dev/bilibili-ambilight/main/bilibili-ambilight.user.js`
+     - 如果連不上 `raw.githubusercontent.com`（例如在中國大陸），可以改用 jsDelivr 鏡像：
+       `https://cdn.jsdelivr.net/gh/iceorange-dev/bilibili-ambilight@main/bilibili-ambilight.user.js`
+     - 這個檔案是由 `npm run build:userscript` 產生的；如果 `main` 分支上還沒有它（例如這個 PR 還沒合併，或你在自己的 fork 上），把網址裡的 `iceorange-dev`／`main` 換成實際的 repo 與分支即可
    - 或自己建置（見下方），再把 `bilibili-ambilight.user.js` 拖進瀏覽器，或在管理器中新增腳本後貼上內容
 3. 重新整理 Bilibili 影片頁面
 
 Chrome / Chromium 核心的瀏覽器請確認已開啟擴充功能的「開發人員模式」，以及在管理器中允許使用者腳本執行（詳見 [Tampermonkey 官方說明](https://www.tampermonkey.net/faq.php#Q209)）。
+
+> 使用者腳本的中繼資料（`@namespace`、`@homepageURL`、`@icon`）來自 `package.json` 的 `userscript` 欄位，預設指向專案首頁。如果要發佈到自己的 fork，把 `userscript.namespace`／`userscript.homepage` 改成你的 repo，再重新執行 `npm run build:userscript` 即可（`bilibili-ambilight.user.js` 是建置產物，不要手改）。
 
 使用者腳本版**沒有擴充功能的工具列圖示與選項頁面**，因此：
 
