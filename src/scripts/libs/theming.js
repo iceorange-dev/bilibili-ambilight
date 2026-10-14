@@ -2,6 +2,7 @@ import { isWatchPageUrl, wrapErrorHandler } from './generic';
 import { injectedScript } from './messaging/injected';
 import ErrorReporter from './errors/reporter';
 import { storage } from './storage';
+import { t } from './i18n';
 
 const THEME_LIGHT = -1;
 const THEME_DEFAULT = 0;
@@ -126,9 +127,10 @@ export default class Theming {
           const withinThresshold = now - 10000 < lastFailedThemeToggle;
           if (withinThresshold) {
             this.settings.setWarning(
-              `上一次切換主題失敗。為了避免頁面不斷重新整理，自動切換成${
-                this.isDarkTheme() ? '淺色' : '深色'
-              }外觀的功能暫停 10 秒。\n\n如果一直失敗，可以把「外觀（主題）」設為「跟隨 B 站」來永久停用自動切換。`
+              t(
+                '上一次切換主題失敗。為了避免頁面不斷重新整理，自動切換成{theme}外觀的功能暫停 10 秒。\n\n如果一直失敗，可以把「外觀（主題）」設為「跟隨 B 站」來永久停用自動切換。',
+                { theme: this.isDarkTheme() ? t('淺色') : t('深色') }
+              )
             );
             this.updatingTheme = false;
             return;
@@ -166,9 +168,13 @@ export default class Theming {
     this.themeToggleFailed = true;
     await storage.set('last-failed-theme-toggle', new Date().getTime());
     this.settings.setWarning(
-      `無法把頁面主題從${wasDark ? '深色' : '淺色'}切換成${
-        wasDark ? '淺色' : '深色'
-      }。\n\n如果一直失敗，可以把「外觀（主題）」設為「跟隨 B 站」來永久停用自動切換。`
+      t(
+        '無法把頁面主題從{from}切換成{to}。\n\n如果一直失敗，可以把「外觀（主題）」設為「跟隨 B 站」來永久停用自動切換。',
+        {
+          from: wasDark ? t('深色') : t('淺色'),
+          to: wasDark ? t('淺色') : t('深色'),
+        }
+      )
     );
   }
 }

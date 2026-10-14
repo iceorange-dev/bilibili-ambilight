@@ -1,4 +1,5 @@
 import ErrorReporter from './errors/reporter';
+import { t } from './i18n';
 import { AmbientlightError } from './errors/ambient-light-error';
 import {
   getWebGLCrashMessage,
@@ -437,8 +438,9 @@ export default class ProjectorWebGL {
     const detected = await this.getMajorPerformanceCaveatDetected();
     if (detected) return;
 
-    const message =
-      '瀏覽器回報這是一台效能較低的裝置。如果你有顯示卡，請確認瀏覽器已開啟硬體加速。\n（已將解析度設定調降為 25% 以提升效能）';
+    const message = t(
+      '瀏覽器回報這是一台效能較低的裝置。如果你有顯示卡，請確認瀏覽器已開啟硬體加速。\n（已將解析度設定調降為 25% 以提升效能）'
+    );
     // console.warn(`ProjectorWebGL: ${message}`)
     this.setWarning(message, true);
     this.settings.set('resolution', 25, true);

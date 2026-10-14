@@ -7,6 +7,7 @@ import {
 } from './libs/generic';
 import ErrorReporter from './libs/errors/reporter';
 import { injectedScript } from './libs/messaging/injected';
+import { t } from './libs/i18n';
 
 setErrorHandler((ex) => ErrorReporter.captureException(ex));
 
@@ -22,13 +23,13 @@ injectedScript.addMessageListener('error', (injectedEx) => {
 const setResourceWarning = (url) => {
   setWarning(
     url
-      ? `無法載入資源，請重新整理網頁再試一次。
+      ? t(`無法載入資源，請重新整理網頁再試一次。
 更新擴充功能後可能會發生這種情況。
 
 如果經常發生，可以在瀏覽器開發人員工具的 Console 面板查看錯誤。
-提示：搜尋與這個網址有關的錯誤：${url}`
-      : `擴充功能已經更新、重新載入或解除安裝，無法在這個網頁上載入。
-請重新整理網頁來重新載入擴充功能。`
+提示：搜尋與這個網址有關的錯誤：{url}`, { url })
+      : t(`擴充功能已經更新、重新載入或解除安裝，無法在這個網頁上載入。
+請重新整理網頁來重新載入擴充功能。`)
   );
 };
 
