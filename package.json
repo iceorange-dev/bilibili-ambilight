@@ -13,6 +13,11 @@
     "url": "https://github.com/iceorange-dev/bilibili-ambilight/issues"
   },
   "type": "module",
+  "userscript": {
+    "namespace": "https://github.com/lonelymeko/bilibili-ambilight",
+    "homepage": "https://github.com/lonelymeko/bilibili-ambilight",
+    "outputFile": "./bilibili-ambilight.user.js"
+  },
   "scripts": {
     "build:manifest": "node manifest-copy.js",
     "build:html": "copyfiles -u 1 src/options.html dist",
@@ -22,6 +27,7 @@
     "build:styles": "run-p build:styles:content build:styles:options",
     "build:scripts": "rollup -c",
     "build": "run-s build:scripts build:styles build:manifest build:html build:images",
+    "build:userscript": "rollup -c rollup.userscript.config.js",
     "build:firefox": "npm run build && node manifest-copy.js firefox"
   },
   "engines": {

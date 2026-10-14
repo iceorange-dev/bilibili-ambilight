@@ -1,3 +1,5 @@
+import { getVersion as getPlatformVersion } from './webext';
+
 const browsersUAList = [
   { ua: 'Firefox', name: 'Firefox' },
   { ua: 'OPR', name: 'Opera' },
@@ -17,13 +19,7 @@ export const getBrowser = () => {
   }
 };
 
-export const getVersion = () => {
-  try {
-    return (chrome.runtime.getManifest() || {}).version;
-  } catch {
-    return null;
-  }
-};
+export const getVersion = getPlatformVersion;
 
 export const originalProjectLink =
   'https://github.com/WesselKroos/youtube-ambilight';

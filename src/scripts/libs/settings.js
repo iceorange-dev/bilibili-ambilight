@@ -17,6 +17,7 @@ import SettingsConfig, {
 } from './settings-config';
 import { getVersion, originalProjectLink, troubleshootLink } from './utils';
 import { storage } from './storage';
+import { isUserscriptBuild } from './webext';
 
 export const FRAMESYNC_DECODEDFRAMES = 0;
 export const FRAMESYNC_DISPLAYFRAMES = 1;
@@ -389,7 +390,11 @@ export default class Settings {
 
     const importTooltip = document.createElement('span');
     importTooltip.className = 'ytpa-export-import-settings-btn__tooltip';
-    importTooltip.textContent = `如何匯出或匯入設定：
+    importTooltip.textContent = isUserscriptBuild
+      ? `如何匯出或匯入設定：
+1. 點擊瀏覽器工具列的 Tampermonkey（使用者腳本管理員）圖示
+2. 在「Bilibili 環境光」的選單中點選「匯出設定」或「匯入設定」`
+      : `如何匯出或匯入設定：
 1. 點擊擴充功能圖示開啟選項
 2. 捲動到「匯入／匯出設定」`;
     importBtn.appendChild(importTooltip);
@@ -704,13 +709,7 @@ export default class Settings {
       )
         return;
 
-      for (const setting of SettingsConfig) {
-        this.saveStorageEntry(setting.name, undefined);
-        if (setting.defaultKey) {
-          this.saveStorageEntry(`${setting.name}-key`, undefined);
-        }
-      }
-      await this.flushPendingStorageEntries();
+      await this.resetAllSettings();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       this.reloadPage();
     });
@@ -1458,6 +1457,20 @@ export default class Settings {
       this.ambientlight.projector.setWebGLWarning('change');
       throw ex;
     }
+  }
+
+  /**
+   * Removes every stored setting so that the defaults apply again.
+   * Used by the reset button of the settings menu and by the userscript menu.
+   */
+  async resetAllSettings() {
+    for (const setting of SettingsConfig) {
+      this.saveStorageEntry(setting.name, undefined);
+      if (setting.defaultKey) {
+        this.saveStorageEntry(`${setting.name}-key`, undefined);
+      }
+    }
+    await this.flushPendingStorageEntries();
   }
 
   reloadPage() {

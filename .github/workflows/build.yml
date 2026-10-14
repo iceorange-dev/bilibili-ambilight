@@ -47,6 +47,10 @@ jobs:
           node manifest-copy.js firefox
           (cd dist && zip -qr "../release/$name-firefox.zip" .)
 
+          # The userscript is a single self-contained file
+          npm run build:userscript
+          cp bilibili-ambilight.user.js release/
+
           ls -l release
 
       - uses: actions/upload-artifact@v7
@@ -71,7 +75,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" release/*.zip \
+          gh release create "$GITHUB_REF_NAME" release/*.zip release/bilibili-ambilight.user.js \
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "$GITHUB_REF_NAME" \

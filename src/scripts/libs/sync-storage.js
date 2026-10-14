@@ -1,4 +1,5 @@
 import { appendErrorStack, wrapErrorHandler } from './generic';
+import { storageSync } from './webext';
 
 class SyncStorage {
   async set(nameOrNamesAndValues, value = undefined) {
@@ -12,7 +13,7 @@ class SyncStorage {
       try {
         const setCallback = () => {
           try {
-            if (chrome.runtime.lastError) throw chrome.runtime.lastError;
+            if (storageSync.lastError) throw storageSync.lastError;
             resolve();
           } catch (ex) {
             appendErrorStack(stack, ex);
@@ -20,9 +21,9 @@ class SyncStorage {
           }
         };
         if (!multiple && value === undefined) {
-          chrome.storage.sync.remove([nameOrNamesAndValues], setCallback);
+          storageSync.remove([nameOrNamesAndValues], setCallback);
         } else {
-          chrome.storage.sync.set(namesAndValues, setCallback);
+          storageSync.set(namesAndValues, setCallback);
         }
       } catch (ex) {
         appendErrorStack(stack, ex);
@@ -37,9 +38,9 @@ class SyncStorage {
     const stack = new Error().stack;
     return await new Promise(function storageGet(resolve, reject) {
       try {
-        chrome.storage.sync.get(names, function getCallback(result) {
+        storageSync.get(names, function getCallback(result) {
           try {
-            if (chrome.runtime.lastError) throw chrome.runtime.lastError;
+            if (storageSync.lastError) throw storageSync.lastError;
             resolve(
               multiple
                 ? result
@@ -64,7 +65,7 @@ class SyncStorage {
   addListener(handler) {
     try {
       const wrappedHandler = wrapErrorHandler(handler, true);
-      chrome.storage.sync.onChanged.addListener(wrappedHandler);
+      storageSync.onChanged.addListener(wrappedHandler);
       this.onChangedListeners.push({ handler, wrappedHandler });
     } catch (ex) {
       console.warn(
@@ -84,7 +85,7 @@ class SyncStorage {
           'Cannot remove a storage.sync.onChange listener that has never been added'
         );
 
-      chrome.storage.sync.onChanged.removeListener(entry.wrappedHandler);
+      storageSync.onChanged.removeListener(entry.wrappedHandler);
 
       this.onChangedListeners.splice(this.onChangedListeners.indexOf(entry), 1);
     } catch {

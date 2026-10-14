@@ -1,6 +1,9 @@
 # Bilibili 環境光（Ambient light for Bilibili）
 
-在 Bilibili 影片周圍加上環境光（Ambilight）效果的瀏覽器擴充功能。
+在 Bilibili 影片周圍加上環境光（Ambilight）效果。同一個原始碼可以建置成兩種版本：
+
+- **瀏覽器擴充功能**（Chrome / Edge / Firefox）
+- **使用者腳本**（Tampermonkey / Violentmonkey / Greasemonkey 等「篡改猴」類管理器）
 
 > 本專案為非官方的第三方擴充功能，與嗶哩嗶哩（Bilibili）及 YouTube 無關。
 
@@ -15,7 +18,23 @@
 
 支援播放器的所有模式：一般、寬螢幕、網頁全螢幕、全螢幕，以及 B 站的「鏡像畫面」設定。往下捲動出現小窗播放器時只會隱藏環境光，深色主題與融入背景的效果會保留。
 
-## 安裝（開發者模式）
+## 安裝（使用者腳本／篡改猴）
+
+1. 安裝使用者腳本管理器：[Tampermonkey](https://www.tampermonkey.net/)（Chrome / Edge / Firefox）、[Violentmonkey](https://violentmonkey.github.io/) 或 Greasemonkey
+2. 安裝腳本：
+   - 直接點安裝網址：`https://raw.githubusercontent.com/lonelymeko/bilibili-ambilight/main/bilibili-ambilight.user.js`
+   - 或自己建置（見下方），再把 `bilibili-ambilight.user.js` 拖進瀏覽器，或在管理器中新增腳本後貼上內容
+3. 重新整理 Bilibili 影片頁面
+
+Chrome / Chromium 核心的瀏覽器請確認已開啟擴充功能的「開發人員模式」，以及在管理器中允許使用者腳本執行（詳見 [Tampermonkey 官方說明](https://www.tampermonkey.net/faq.php#Q209)）。
+
+使用者腳本版**沒有擴充功能的工具列圖示與選項頁面**，因此：
+
+- 環境光的設定一樣在播放器控制列（齒輪按鈕左邊的「光芒螢幕」圖示）
+- 匯出／匯入設定、開關環境光、開啟設定選單、重設所有設定，改從**使用者腳本管理器的選單**（點 Tampermonkey 圖示 →「Bilibili 環境光」）操作
+- 設定儲存在使用者腳本管理器自己的儲存空間（`GM_setValue` / `GM_getValue`）；管理器缺少這些 API 時會退回 `localStorage`
+
+## 安裝（瀏覽器擴充功能，開發者模式）
 
 需要 Node.js 22 以上。
 
@@ -31,6 +50,8 @@ npm run build
 3. 重新整理 Bilibili 影片頁面
 
 Firefox：改用 `npm run build:firefox` 建置（Firefox 的 manifest 需要 `background.scripts`，Chrome 則只接受 `background.service_worker`），再開啟 `about:debugging#/runtime/this-firefox` →「載入暫用附加元件」→ 選擇 `dist/manifest.json`。
+
+使用者腳本：`npm run build:userscript` 會把整個擴充功能打包成單一檔案 `bilibili-ambilight.user.js`（建置產物，會提交進 repo 以便直接安裝）。它會把樣式表與除雜訊貼圖（`src/images/noise-*.png`）內嵌進檔案，所以檔案比較大（約 1.5 MB）。
 
 ## 使用方式
 
@@ -62,13 +83,30 @@ Firefox：改用 `npm run build:firefox` 建置（Firefox 的 manifest 需要 `b
 
 | 檔案 | 說明 |
 | --- | --- |
-| `src/scripts/content.js` | 內容腳本進入點：載入 CSS、注入 `injected.js`、載入 `content-main.js` |
+| `src/scripts/content.js` | 內容腳本進入點（擴充功能）：載入 CSS、注入 `injected.js`、載入 `content-main.js` |
+| `src/scripts/userscript.js` | 使用者腳本進入點：內嵌樣式與貼圖，並載入 `injected.js`、`content-main.js` 與使用者腳本選單 |
+| `src/scripts/userscript-menu.js` | 使用者腳本管理器選單：開關環境光、匯出／匯入、重設設定 |
 | `src/scripts/content-main.js` | 偵測 B 站播放器，並在播放器／影片元素被替換（換影片、換 P）時重新綁定 |
 | `src/scripts/injected.js` | 在頁面主環境中執行：切換 B 站的深色／淺色主題（`html.night-mode` 與 `#__css-map__`） |
+| `src/scripts/libs/webext.js` | 平台差異集中處：擴充功能走 `chrome.*`，使用者腳本走 `GM_*`（退回 `localStorage`） |
 | `src/scripts/libs/ambientlight.js` | 環境光主邏輯：位置計算、檢視模式、影格排程 |
 | `src/scripts/libs/settings.js`、`settings-config.js` | 播放器內的設定選單 |
+| `src/scripts/libs/settings-io.js` | 設定的匯出／匯入（擴充功能選項頁與使用者腳本選單共用） |
 | `src/scripts/libs/theming.js` | 頁面主題切換 |
+| `src/userscript.meta.txt` | 使用者腳本的中繼資料區塊（`==UserScript==`） |
+| `rollup.shared.js` | 兩個建置共用的 rollup 外掛（編譯 SCSS、內嵌貼圖、babel、eslint） |
+| `rollup.userscript.config.js` | 使用者腳本的 rollup 設定 |
 | `src/styles/content.scss` | 頁面、播放器與設定選單的樣式 |
+
+## 建置
+
+| 指令 | 產物 |
+| --- | --- |
+| `npm run build` | 擴充功能（`dist/`），Chrome / Edge 用 |
+| `npm run build:firefox` | 擴充功能（`dist/`），Firefox 用 |
+| `npm run build:userscript` | 使用者腳本（`bilibili-ambilight.user.js`） |
+
+兩個建置共用 `src/` 底下所有程式碼，平台差異（儲存空間、樣式注入、貼圖來源、選單）都收在 `src/scripts/libs/webext.js` 與建置設定裡。
 
 ## 授權
 
