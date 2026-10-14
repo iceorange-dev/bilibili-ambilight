@@ -9,6 +9,7 @@ export default defineConfig([
       sourceType: 'module',
       globals: {
         ...globals.browser,
+        ...globals.greasemonkey,
         chrome: true,
         ambientlight: true,
         cookieStore: true,

@@ -1,4 +1,5 @@
 import { appendErrorStack, wrapErrorHandler } from './generic';
+import { isContextValid, storageLocal } from './webext';
 
 class Storage {
   async set(
@@ -15,25 +16,25 @@ class Storage {
       const stack = new Error().stack;
       return await new Promise(function storageSet(resolve, reject) {
         try {
-          if (!chrome?.runtime?.id) throw new Error('uninstalled');
+          if (!isContextValid()) throw new Error('uninstalled');
 
           const setCallback = () => {
             try {
-              if (chrome.runtime.lastError) throw chrome.runtime.lastError;
+              if (storageLocal.lastError) throw storageLocal.lastError;
               resolve();
             } catch (ex) {
-              if (!chrome?.runtime?.id) return reject(new Error('uninstalled'));
+              if (!isContextValid()) return reject(new Error('uninstalled'));
               appendErrorStack(stack, ex);
               reject(ex);
             }
           };
           if (!multiple && value === undefined) {
-            chrome.storage.local.remove([nameOrNamesAndValues], setCallback);
+            storageLocal.remove([nameOrNamesAndValues], setCallback);
           } else {
-            chrome.storage.local.set(namesAndValues, setCallback);
+            storageLocal.set(namesAndValues, setCallback);
           }
         } catch (ex) {
-          if (!chrome?.runtime?.id) return reject(new Error('uninstalled'));
+          if (!isContextValid()) return reject(new Error('uninstalled'));
           appendErrorStack(stack, ex);
           reject(ex);
         }
@@ -58,11 +59,11 @@ class Storage {
       const stack = new Error().stack;
       return await new Promise(function storageGet(resolve, reject) {
         try {
-          if (!chrome?.runtime?.id) throw new Error('uninstalled');
+          if (!isContextValid()) throw new Error('uninstalled');
 
-          chrome.storage.local.get(names, function getCallback(result) {
+          storageLocal.get(names, function getCallback(result) {
             try {
-              if (chrome.runtime.lastError) throw chrome.runtime.lastError;
+              if (storageLocal.lastError) throw storageLocal.lastError;
               resolve(
                 multiple
                   ? result
@@ -71,13 +72,13 @@ class Storage {
                   : result[nameOrNames]
               );
             } catch (ex) {
-              if (!chrome?.runtime?.id) return reject(new Error('uninstalled'));
+              if (!isContextValid()) return reject(new Error('uninstalled'));
               appendErrorStack(stack, ex);
               reject(ex);
             }
           });
         } catch (ex) {
-          if (!chrome?.runtime?.id) return reject(new Error('uninstalled'));
+          if (!isContextValid()) return reject(new Error('uninstalled'));
           appendErrorStack(stack, ex);
           reject(ex);
         }
@@ -100,7 +101,7 @@ class Storage {
   addListener(handler) {
     try {
       const wrappedHandler = wrapErrorHandler(handler, true);
-      chrome.storage.local.onChanged.addListener(wrappedHandler);
+      storageLocal.onChanged.addListener(wrappedHandler);
       this.onChangedListeners.push({ handler, wrappedHandler });
     } catch (ex) {
       console.warn(
@@ -120,7 +121,7 @@ class Storage {
           'Cannot remove a storage.local.onChange listener that has never been added'
         );
 
-      chrome.storage.local.onChanged.removeListener(entry.wrappedHandler);
+      storageLocal.onChanged.removeListener(entry.wrappedHandler);
 
       this.onChangedListeners.splice(this.onChangedListeners.indexOf(entry), 1);
     } catch {
