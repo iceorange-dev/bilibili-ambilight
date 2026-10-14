@@ -1,4 +1,5 @@
-import { Canvas, canvas2DCrashTips, ctxOptions, on, raf } from './generic';
+import { Canvas, getCanvas2DCrashTips, ctxOptions, on, raf } from './generic';
+import { t } from './i18n';
 import ProjectorShadow from './projector-shadow';
 
 export default class Projector2d {
@@ -35,7 +36,7 @@ export default class Projector2d {
     }
 
     this.settings.setWarning(
-      `GPU 當機後無法恢復渲染器。${canvas2DCrashTips}`
+      `${t('GPU 當機後無法恢復渲染器。')}${getCanvas2DCrashTips()}`
     );
   };
 
@@ -44,7 +45,7 @@ export default class Projector2d {
       console.error('Projector2D context restore failed 3 times');
 
       this.settings.setWarning(
-        `GPU 當機後已嘗試 3 次，仍無法恢復渲染器。${canvas2DCrashTips}`
+        `${t('GPU 當機後已嘗試 3 次，仍無法恢復渲染器。')}${getCanvas2DCrashTips()}`
       );
       return;
     }

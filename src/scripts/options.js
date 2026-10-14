@@ -3,6 +3,7 @@ import { syncStorage } from './libs/sync-storage';
 import { originalProjectLink, troubleshootLink } from './libs/utils';
 import SettingsConfig from './libs/settings-config';
 import { on } from './libs/generic';
+import { applyTranslations, resolveLocale, setLocale, t } from './libs/i18n';
 
 document.querySelector('#originalProjectLink').href = originalProjectLink;
 document.querySelector('#troubleshootLink').href = troubleshootLink;
@@ -11,6 +12,14 @@ const importExportStatus = document.querySelector('#importExportStatus');
 const importExportStatusDetails = document.querySelector(
   '#importExportStatusDetails'
 );
+
+// The language of the interface is stored like every other setting
+(async () => {
+  const language = await storage.get('setting-language');
+  setLocale(resolveLocale(language));
+  applyTranslations();
+})();
+
 let importWarnings = [];
 const importSettings = async (storageName, importJson) => {
   try {
@@ -20,11 +29,11 @@ const importSettings = async (storageName, importJson) => {
     importExportStatusDetails.scrollTo(0, 0);
 
     const jsonString = await importJson();
-    if (!jsonString) throw new Error('找不到可以匯入的設定');
+    if (!jsonString) throw new Error(t('找不到可以匯入的設定'));
 
     let importedObject = JSON.parse(jsonString);
     if (typeof importedObject !== 'object')
-      throw new Error('找不到可以匯入的設定');
+      throw new Error(t('找不到可以匯入的設定'));
 
     // Temporarely import the setting blur as blur2
     // https://github.com/WesselKroos/youtube-ambilight/issues/191#issuecomment-1703792823
@@ -44,9 +53,10 @@ const importSettings = async (storageName, importJson) => {
       const setting = SettingsConfig.find((setting) => setting.name === name);
       if (!setting) {
         importWarnings.push(
-          `已略過「${name}」：${JSON.stringify(
-            value
-          )}。此設定可能已在更新後被移除或改名。`
+          t('已略過「{name}」：{value}。此設定可能已在更新後被移除或改名。', {
+            name,
+            value: JSON.stringify(value),
+          })
         );
         continue;
       }
@@ -55,39 +65,52 @@ const importSettings = async (storageName, importJson) => {
       if (type === 'checkbox' || type === 'section') {
         if (typeof value !== 'boolean') {
           importWarnings.push(
-            `已略過「${name}」：${JSON.stringify(value)} 不是布林值。`
+            t('已略過「{name}」：{value} 不是布林值。', {
+              name,
+              value: JSON.stringify(value),
+            })
           );
           continue;
         }
       } else if (type === 'list') {
         if (typeof value !== 'number') {
           importWarnings.push(
-            `已略過「${name}」：${JSON.stringify(value)} 不是數字。`
+            t('已略過「{name}」：{value} 不是數字。', {
+              name,
+              value: JSON.stringify(value),
+            })
           );
           continue;
         }
         const valueRoundingLeft = ((value - min) * 1000) % (step * 1000);
         if (valueRoundingLeft !== 0) {
           importWarnings.push(
-            `已將「${name}」向下取整：${JSON.stringify(
-              value
-            )} 不是${min === undefined ? '' : `從 ${min} 開始、`}以 ${step} 為間隔的值。`
+            t('已將「{name}」向下取整：{value} 不是{min}以 {step} 為間隔的值。', {
+              name,
+              value: JSON.stringify(value),
+              min: min === undefined ? '' : t('從 {min} 開始、', { min }),
+              step,
+            })
           );
           value = Math.round(value * 1000 - valueRoundingLeft) / 1000;
         }
         if (min !== undefined && value < min) {
           importWarnings.push(
-            `已調整「${name}」：${JSON.stringify(
-              value
-            )} 低於最小值 ${min}。`
+            t('已調整「{name}」：{value} 低於最小值 {min}。', {
+              name,
+              value: JSON.stringify(value),
+              min,
+            })
           );
           value = min;
         }
         if (max !== undefined && value > max) {
           importWarnings.push(
-            `已調整「${name}」：${JSON.stringify(
-              value
-            )} 高於最大值 ${max}。`
+            t('已調整「{name}」：{value} 高於最大值 {max}。', {
+              name,
+              value: JSON.stringify(value),
+              max,
+            })
           );
           value = max;
         }
@@ -97,39 +120,47 @@ const importSettings = async (storageName, importJson) => {
     }
 
     if (!Object.keys(settings).length)
-      throw new Error('找不到可以匯入的設定');
+      throw new Error(t('找不到可以匯入的設定'));
 
     await storage.set(settings);
 
-    importExportStatus.textContent = `已從${storageName}匯入 ${
-      Object.keys(settings).length
-    } 項設定。
-（請重新整理已開啟的 Bilibili 分頁來套用新的設定）${
-      importWarnings.length
-        ? `\n\n有 ${importWarnings.length} 個警告：\n- ${importWarnings.join(
-            '\n- '
-          )}`
-        : ''
-    }`;
+    importExportStatus.textContent = t(
+      '已從{storageName}匯入 {count} 項設定。\n（請重新整理已開啟的 Bilibili 分頁來套用新的設定）{warnings}',
+      {
+        storageName,
+        count: Object.keys(settings).length,
+        warnings: importWarnings.length
+          ? t('\n\n有 {count} 個警告：\n- {warnings}', {
+              count: importWarnings.length,
+              warnings: importWarnings.join('\n- '),
+            })
+          : '',
+      }
+    );
     if (importWarnings.length) {
       importExportStatus.classList.add('has-error');
     }
     importWarnings = [];
 
-    importExportStatusDetails.textContent = `查看匯入的設定（點擊展開）\n注意：blur 設定在內部會轉換成 blur2\n\n${Object.keys(
-      settings
-    )
-      .map(
-        (key) =>
-          `${key.substring('setting-'.length)}: ${JSON.stringify(
-            settings[key]
-          )}`
-      )
-      .join('\n')}`;
+    importExportStatusDetails.textContent = t(
+      '查看匯入的設定（點擊展開）\n注意：blur 設定在內部會轉換成 blur2\n\n{settings}',
+      {
+        settings: Object.keys(settings)
+          .map(
+            (key) =>
+              `${key.substring('setting-'.length)}: ${JSON.stringify(
+                settings[key]
+              )}`
+          )
+          .join('\n'),
+      }
+    );
   } catch (ex) {
     console.error('Failed to import settings', ex);
     importExportStatus.classList.add('has-error');
-    importExportStatus.textContent = `無法匯入設定：\n${ex?.message}`;
+    importExportStatus.textContent = t('無法匯入設定：\n{error}', {
+      error: ex?.message,
+    });
   }
 };
 const exportSettings = async (storageName, exportJson) => {
@@ -155,9 +186,7 @@ const exportSettings = async (storageName, exportJson) => {
       exportObject[name] = storageData[key];
     }
     if (!Object.keys(exportObject).length)
-      throw new Error(
-        '沒有可以匯出的設定。所有設定都還是預設值。'
-      );
+      throw new Error(t('沒有可以匯出的設定。所有設定都還是預設值。'));
 
     // Temporarely export the setting blur2 as blur
     // https://github.com/WesselKroos/youtube-ambilight/issues/191#issuecomment-1703792823
@@ -172,18 +201,24 @@ const exportSettings = async (storageName, exportJson) => {
 
     const jsonString = JSON.stringify(exportObject, null, 2);
     await exportJson(jsonString);
-    importExportStatus.textContent = `已匯出 ${
-      Object.keys(exportObject).length
-    } 項設定${storageName ? `到${storageName}` : ''}`;
-    importExportStatusDetails.textContent = `查看匯出的設定（點擊展開）\n\n${Object.keys(
-      exportObject
-    )
-      .map((key) => `${key}: ${JSON.stringify(exportObject[key])}`)
-      .join('\n')}`;
+    importExportStatus.textContent = t('已匯出 {count} 項設定{where}', {
+      count: Object.keys(exportObject).length,
+      where: storageName ? t('到{storageName}', { storageName }) : '',
+    });
+    importExportStatusDetails.textContent = t(
+      '查看匯出的設定（點擊展開）\n\n{settings}',
+      {
+        settings: Object.keys(exportObject)
+          .map((key) => `${key}: ${JSON.stringify(exportObject[key])}`)
+          .join('\n'),
+      }
+    );
   } catch (ex) {
     console.error('Failed to export settings', ex);
     importExportStatus.classList.add('has-error');
-    importExportStatus.textContent = `無法匯出設定：\n${ex?.message}`;
+    importExportStatus.textContent = t('無法匯出設定：\n{error}', {
+      error: ex?.message,
+    });
   }
 };
 
@@ -192,7 +227,7 @@ const importFileInput = document.querySelector('[name="import-settings-file"]');
 on(importFileInput, 'change', async () => {
   if (!importFileInput.files.length) return;
 
-  await importSettings('檔案', async () => {
+  await importSettings(t('檔案'), async () => {
     return await new Promise((resolve, reject) => {
       try {
         const reader = new FileReader();
@@ -219,7 +254,7 @@ on(exportFileButton, 'click', async () => {
     link.setAttribute('download', 'ambient-light-for-bilibili-settings.json');
     link.setAttribute(
       'title',
-      '如果自動下載被封鎖：\n1. 在這個連結上按右鍵\n2. 點選「另存連結為⋯」'
+      t('如果自動下載被封鎖：\n1. 在這個連結上按右鍵\n2. 點選「另存連結為⋯」')
     );
     link.style.display = 'block';
     link.style.marginTop = '0';
@@ -236,14 +271,14 @@ on(exportFileButton, 'click', async () => {
 
 const importAccountButton = document.querySelector('#importAccountBtn');
 on(importAccountButton, 'click', async () => {
-  await importSettings('雲端儲存空間', async () => {
+  await importSettings(t('雲端儲存空間'), async () => {
     return await syncStorage.get('settings');
   });
 });
 
 const exportAccountButton = document.querySelector('#exportAccountBtn');
 on(exportAccountButton, 'click', async () => {
-  await exportSettings('雲端儲存空間', async (jsonString) => {
+  await exportSettings(t('雲端儲存空間'), async (jsonString) => {
     await syncStorage.set('settings', jsonString);
     await syncStorage.set('settings-date', new Date().toJSON());
   });
@@ -256,7 +291,13 @@ const updateImportableAccountStatus = async () => {
   const jsonString = await syncStorage.get('settings-date');
   if (jsonString) {
     const settingsDate = new Date(jsonString);
-    importableAccountStatus.textContent = `上次匯出到雲端的時間：${settingsDate.toLocaleDateString()} ${settingsDate.toLocaleTimeString()}`;
+    importableAccountStatus.textContent = t(
+      '上次匯出到雲端的時間：{date} {time}',
+      {
+        date: settingsDate.toLocaleDateString(),
+        time: settingsDate.toLocaleTimeString(),
+      }
+    );
     importAccountButton.disabled = false;
   } else {
     importableAccountStatus.textContent = '';

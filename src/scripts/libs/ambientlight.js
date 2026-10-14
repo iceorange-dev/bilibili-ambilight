@@ -37,6 +37,7 @@ import Theming from './theming';
 import Stats from './stats';
 import { injectedScript } from './messaging/injected';
 import { getNodeTreeString, getPageElems } from './errors/dom';
+import { t } from './i18n';
 
 const baseUrl = chrome.runtime.getURL('') || ''; // document.currentScript?.getAttribute('data-base-url') || ''
 
@@ -163,7 +164,7 @@ export default class Ambientlight {
       error.details = getPageElems();
       error.details.videoIsInDocument = document.contains(videoElem);
       error.details.videoTree = getNodeTreeString(videoElem);
-      setWarning(`載入失敗。\n${error.message}`);
+      setWarning(t('載入失敗。\n{message}', { message: error.message }));
       throw error;
     }
 
@@ -175,7 +176,7 @@ export default class Ambientlight {
         'Cannot find settingsMenuBtnParent: .bpx-player-control-bottom-right'
       );
       error.details = getPageElems();
-      setWarning(`載入失敗。\n${error.message}`);
+      setWarning(t('載入失敗。\n{message}', { message: error.message }));
       throw error;
     }
 
@@ -488,7 +489,7 @@ export default class Ambientlight {
       },
       encrypted: () => {
         this.settings.setWarning(
-          '這部影片受到 Bilibili 的 DRM 保護，無法顯示環境光',
+          t('這部影片受到 Bilibili 的 DRM 保護，無法顯示環境光'),
           true,
           true,
           'encrypted'
@@ -2606,12 +2607,15 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
   setDrawWarning = (ex) => {
     const message =
       ex.name === 'SecurityError'
-        ? '重新整理可能有幫助，但最可能的原因是瀏覽器不允許環境光讀取這部 Bilibili 影片的像素。其他 Bilibili 影片應該不會有這個問題。'
-        : `重新整理頁面可能有幫助。如果沒有，可能是這部 Bilibili 影片本身有問題，也可以搜尋下方的錯誤訊息。\n\n錯誤：${ex.name}\n原因：${ex.message}`;
+        ? t(
+            '重新整理可能有幫助，但最可能的原因是瀏覽器不允許環境光讀取這部 Bilibili 影片的像素。其他 Bilibili 影片應該不會有這個問題。'
+          )
+        : t(
+            '重新整理頁面可能有幫助。如果沒有，可能是這部 Bilibili 影片本身有問題，也可以搜尋下方的錯誤訊息。\n\n錯誤：{name}\n原因：{message}',
+            { name: ex.name, message: ex.message }
+          );
 
-    this.settings.setWarning(
-      `無法顯示環境光\n\n${message}`
-    );
+    this.settings.setWarning(t('無法顯示環境光\n\n{message}', { message }));
   };
 
   afterNextFrame = async function afterNextFrame() {

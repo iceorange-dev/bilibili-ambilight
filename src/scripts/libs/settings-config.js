@@ -831,6 +831,26 @@ const SettingsConfig = [
     ],
   },
   {
+    name: 'language',
+    label: '語言',
+    description: '介面語言，變更後會重新載入網頁',
+    type: 'list',
+    manualinput: false,
+    default: -1,
+    min: -1,
+    max: 4,
+    step: 1,
+    // The values are the indexes of the locales defined in src/scripts/libs/i18n.js
+    snapPoints: [
+      { value: -1, label: '跟隨瀏覽器' },
+      { value: 0, label: '繁體中文' },
+      { value: 1, label: '简体中文' },
+      { value: 2, label: 'English' },
+      { value: 3, label: '日本語' },
+      { value: 4, label: '한국어' },
+    ],
+  },
+  {
     name: 'enabled',
     label: '啟用',
     type: 'checkbox',
