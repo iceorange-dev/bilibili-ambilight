@@ -18,6 +18,7 @@ import SettingsConfig, {
 import { getVersion, originalProjectLink, troubleshootLink } from './utils';
 import { storage } from './storage';
 import { isUserscriptBuild } from './webext';
+import { t, setLocale, resolveLocale } from './i18n';
 
 export const FRAMESYNC_DECODEDFRAMES = 0;
 export const FRAMESYNC_DISPLAYFRAMES = 1;
@@ -75,7 +76,7 @@ export default class Settings {
     const warningTimeout = setTimeout(
       () =>
         setWarning(
-          `載入先前的設定已經超過 5 秒。
+          t(`載入先前的設定已經超過 5 秒。
 如果這是第一次出現這個警告而且沒有消失，擴充功能可能剛更新過，
 重新整理網頁即可完成更新。
 
@@ -83,7 +84,7 @@ export default class Settings {
 - 其他擴充功能長時間阻擋了這個網頁的程式執行。
   暫時停用其他擴充功能來找出是哪一個。
 - 如果電腦很慢，或其他程式也經常卡住，
-  可能是硬體（通常是記憶體）有問題。`
+  可能是硬體（通常是記憶體）有問題。`)
         ),
       5000
     );
@@ -171,7 +172,7 @@ export default class Settings {
       storedSettings = await Settings.getStoredSettingsCached();
     } catch {
       this.setWarning(
-        '無法載入先前的設定，擴充功能可能已經更新。\n請重新整理頁面再試一次。'
+        t('無法載入先前的設定，擴充功能可能已經更新。\n請重新整理頁面再試一次。')
       );
     }
 
@@ -192,6 +193,9 @@ export default class Settings {
         setting.key = key;
       }
     }
+
+    // The language of the interface is stored like every other setting
+    setLocale(resolveLocale(this.language));
 
     this.migrate(storedSettings);
 
@@ -246,7 +250,8 @@ export default class Settings {
 
   updateWebGLCrashDescription = () => {
     const disabledText =
-      SettingsConfig.find((setting) => setting.name === 'webGL').disabled || '';
+      t(SettingsConfig.find((setting) => setting.name === 'webGL').disabled) ||
+      '';
     const labelElem = this.menuElem.querySelector(
       '#setting-webGL .ytp-menuitem-label'
     );
@@ -262,12 +267,16 @@ export default class Settings {
 
     let descriptionText = disabledText;
     if (this.webGLCrashDate) {
-      descriptionText += `${
-        disabledText ? '\r\n而且 WebGL 渲染器先前曾經失敗' : '載入失敗'
-      }，時間：${this.webGLCrashDate.toLocaleDateString()} ${this.webGLCrashDate.toLocaleTimeString()}`;
-      descriptionText += `\r\n\r\n請檢查瀏覽器的硬體加速與 WebGL 設定，或點擊選單最上方的「排解效能問題」連結。`;
+      descriptionText += t('{reason}，時間：{date} {time}', {
+        reason: disabledText
+          ? t('\r\n而且 WebGL 渲染器先前曾經失敗')
+          : t('載入失敗'),
+        date: this.webGLCrashDate.toLocaleDateString(),
+        time: this.webGLCrashDate.toLocaleTimeString(),
+      });
+      descriptionText += `\r\n\r\n${t('請檢查瀏覽器的硬體加速與 WebGL 設定，或點擊選單最上方的「排解效能問題」連結。')}`;
       if (!disabledText)
-        descriptionText += `\r\n\r\n注意：你可以重新開啟此設定再試一次。如果 WebGL 渲染器再次失敗，上面的時間會更新。`;
+        descriptionText += `\r\n\r\n${t('注意：你可以重新開啟此設定再試一次。如果 WebGL 渲染器再次失敗，上面的時間會更新。')}`;
     }
     descriptionElem.textContent = descriptionText;
   };
@@ -337,7 +346,7 @@ export default class Settings {
 
     const warningCloseButton = document.createElement('button');
     warningCloseButton.className = 'ytpa-warning-close-btn';
-    warningCloseButton.title = '關閉警告';
+    warningCloseButton.title = t('關閉警告');
     warning.appendChild(warningCloseButton);
 
     const info = document.createElement('div');
@@ -376,7 +385,7 @@ export default class Settings {
 
     const troubleshootLinkText = document.createElement('span');
     troubleshootLinkText.className = 'ytpa-feedback-link__text';
-    troubleshootLinkText.textContent = '排解效能問題';
+    troubleshootLinkText.textContent = t('排解效能問題');
     troubleshootLinkElem.appendChild(troubleshootLinkText);
 
     const toolbar = document.createElement('div');
@@ -391,18 +400,18 @@ export default class Settings {
     const importTooltip = document.createElement('span');
     importTooltip.className = 'ytpa-export-import-settings-btn__tooltip';
     importTooltip.textContent = isUserscriptBuild
-      ? `如何匯出或匯入設定：
+      ? t(`如何匯出或匯入設定：
 1. 點擊瀏覽器工具列的 Tampermonkey（使用者腳本管理員）圖示
-2. 在「Bilibili 環境光」的選單中點選「匯出設定」或「匯入設定」`
-      : `如何匯出或匯入設定：
+2. 在「Bilibili 環境光」的選單中點選「匯出設定」或「匯入設定」`)
+      : t(`如何匯出或匯入設定：
 1. 點擊擴充功能圖示開啟選項
-2. 捲動到「匯入／匯出設定」`;
+2. 捲動到「匯入／匯出設定」`);
     importBtn.appendChild(importTooltip);
 
     const resetBtn = document.createElement('button');
     resetBtn.className = 'ytpa-reset-settings-btn';
     resetBtn.type = 'button';
-    resetBtn.title = '重設所有設定';
+    resetBtn.title = t('重設所有設定');
     toolbar.appendChild(resetBtn);
 
     const header2 = document.createElement('div');
@@ -426,8 +435,9 @@ export default class Settings {
 
     const originalProjectLinkText = document.createElement('span');
     originalProjectLinkText.className = 'ytpa-feedback-link__text';
-    originalProjectLinkText.textContent =
-      '改編自 Wessel Kroos 的 Ambient light for YouTube™';
+    originalProjectLinkText.textContent = t(
+      '改編自 Wessel Kroos 的 Ambient light for YouTube™'
+    );
     originalProjectLinkElem.appendChild(originalProjectLinkText);
 
     let sectionContent;
@@ -444,7 +454,7 @@ export default class Settings {
       if (setting.experimental) classes += ' ytpa-menuitem--experimental';
 
       const labelElems = [];
-      labelElems.push(document.createTextNode(setting.label));
+      labelElems.push(document.createTextNode(t(setting.label)));
 
       if (setting.key) {
         labelElems.push(document.createTextNode('['));
@@ -452,8 +462,9 @@ export default class Settings {
         const labelKey = document.createElement('span');
         labelKey.contentEditable = true;
         labelKey.className = 'ytpa-menuitem-key';
-        labelKey.title =
-          '點這裡再按下一個鍵來變更快捷鍵\n（或按 Esc 停用這個快捷鍵）';
+        labelKey.title = t(
+          '點這裡再按下一個鍵來變更快捷鍵\n（或按 Esc 停用這個快捷鍵）'
+        );
         labelKey.textContent = setting.key;
         labelElems.push(labelKey);
 
@@ -462,7 +473,7 @@ export default class Settings {
 
       if (setting.questionMark) {
         const questionMark = document.createElement('a');
-        questionMark.title = setting.questionMark.title;
+        questionMark.title = t(setting.questionMark.title);
         questionMark.style.padding = '0 5px';
         questionMark.textContent = '?';
         if (setting.questionMark.href) {
@@ -480,7 +491,7 @@ export default class Settings {
         labelElems.push(document.createElement('br'));
         const labelDescription = document.createElement('span');
         labelDescription.className = 'ytpa-menuitem-description';
-        labelDescription.textContent = setting.description;
+        labelDescription.textContent = t(setting.description);
         labelElems.push(labelDescription);
       }
 
@@ -523,9 +534,9 @@ export default class Settings {
         checkbox.ariaChecked = value ? 'true' : 'false';
         if (setting.disabled) {
           checkbox.ariaDisabled = 'true';
-          checkbox.title = '無法使用此設定';
+          checkbox.title = t('無法使用此設定');
         } else {
-          checkbox.title = '按右鍵恢復預設值';
+          checkbox.title = t('按右鍵恢復預設值');
           checkbox.tabindex = '0';
         }
         sectionContent.appendChild(checkbox);
@@ -540,7 +551,7 @@ export default class Settings {
           const description = document.createElement('span');
           description.className = 'ytpa-menuitem-description';
           description.style.color = '#fa0';
-          description.textContent = setting.disabled;
+          description.textContent = t(setting.disabled);
           label.appendChild(description);
         }
 
@@ -595,7 +606,7 @@ export default class Settings {
           setting.snapPoints ? 'ytp-menuitem-range--has-snap-points' : ''
         }`;
         range.setAttribute('rowspan', '2');
-        range.title = '按右鍵恢復預設值';
+        range.title = t('按右鍵恢復預設值');
         wrapper.appendChild(range);
 
         const input = document.createElement('input');
@@ -628,12 +639,14 @@ export default class Settings {
             option.className = `setting-range-datalist__label ${
               flip ? 'setting-range-datalist__label--flip' : ''
             }`;
-            option.title = `設為${hiddenLabel || label}`;
+            option.title = t('設為{label}', {
+              label: t(hiddenLabel || label),
+            });
             option.style.marginLeft = `${
               (value + -setting.min) * (100 / (setting.max - setting.min))
             }%`;
             option.value = value.toString();
-            option.label = label || '';
+            option.label = t(label || '');
             option.textContent = option.label;
             datalist.appendChild(option);
           }
@@ -661,13 +674,11 @@ export default class Settings {
     this.settingsMenuBtnTooltipText = document.createElement('span');
     this.settingsMenuBtnTooltipText.className = 'ytp-tooltip-bottom-text';
     this.settingsMenuBtnTooltipText.appendChild(
-      document.createTextNode('環境光暫停載入中。')
+      document.createTextNode(t('環境光暫停載入中。'))
     );
     this.settingsMenuBtnTooltipText.appendChild(document.createElement('br'));
     this.settingsMenuBtnTooltipText.appendChild(
-      document.createTextNode(
-        '正在等待影片與網頁載入完成⋯'
-      )
+      document.createTextNode(t('正在等待影片與網頁載入完成⋯'))
     );
     settingsMenuBtnTooltipTextWrapper.prepend(this.settingsMenuBtnTooltipText);
 
@@ -704,7 +715,7 @@ export default class Settings {
     on(resetSettingsBtnElem, 'click', async () => {
       if (
         !confirm(
-          '確定要重設「所有」設定並重新載入頁面嗎？'
+          t('確定要重設「所有」設定並重新載入頁面嗎？')
         )
       )
         return;
@@ -1328,7 +1339,7 @@ export default class Settings {
       'bpx-player-ctrl-btn ytp-ambientlight-settings-button is-loading';
     elem.setAttribute('role', 'button');
     elem.setAttribute('tabindex', '0');
-    elem.setAttribute('aria-label', '環境光');
+    elem.setAttribute('aria-label', t('環境光'));
     elem.setAttribute('aria-owns', 'ytp-id-190');
 
     const iconElem = document.createElement('div');
@@ -1489,45 +1500,52 @@ export default class Settings {
   }
 
   frameFadingValueToDuration(value) {
-    if (!value) return '關閉';
+    if (!value) return t('關閉');
 
     const frames = Math.pow(value, 2);
     const seconds = frames / 30;
-    if (seconds < 1) return `${Math.round(seconds * 1000)} ms`;
-    return `${Math.round(seconds * 10) / 10} 秒`;
+    if (seconds < 1)
+      return t('{value} ms', { value: Math.round(seconds * 1000) });
+    return t('{value} 秒', { value: Math.round(seconds * 10) / 10 });
   }
 
   getSettingListDisplayText(setting) {
     const value = this[setting.name];
     if (setting.name === 'frameSync') {
       return {
-        [FRAMESYNC_DECODEDFRAMES]: '解碼影格率',
-        [FRAMESYNC_DISPLAYFRAMES]: '顯示器影格率',
-        [FRAMESYNC_VIDEOFRAMES]: '影片影格率',
+        [FRAMESYNC_DECODEDFRAMES]: t('解碼影格率'),
+        [FRAMESYNC_DISPLAYFRAMES]: t('顯示器影格率'),
+        [FRAMESYNC_VIDEOFRAMES]: t('影片影格率'),
       }[value];
     }
     if (setting.name === 'debandingBlendMode') {
       return {
-        [DEBANDING_BLEND_MODE_LCD]: 'LCD',
-        [DEBANDING_BLEND_MODE_OLED]: 'OLED',
+        [DEBANDING_BLEND_MODE_LCD]: t('LCD'),
+        [DEBANDING_BLEND_MODE_OLED]: t('OLED'),
       }[value];
     }
     if (setting.name === 'barSizeDetectionAverageHistorySize') {
       return this.barSizeDetectionAverageHistorySize == 1
-        ? `1 個影格`
-        : `${value} 個影格`;
+        ? t('1 個影格')
+        : t('{value} 個影格', { value });
     }
     if (setting.name === 'framerateLimit') {
-      return this.framerateLimit == 0 ? '不限制' : `${value} fps`;
+      return this.framerateLimit == 0
+        ? t('不限制')
+        : t('{value} fps', { value });
     }
     if (setting.name === 'frameFading') {
       return this.frameFadingValueToDuration(value);
     }
-    if (setting.name === 'theme' || setting.name === 'enableInViews') {
+    if (
+      setting.name === 'theme' ||
+      setting.name === 'enableInViews' ||
+      setting.name === 'language'
+    ) {
       const snapPoint = setting.snapPoints.find(
         (point) => point.value === value
       );
-      return snapPoint?.hiddenLabel || snapPoint?.label;
+      return t(snapPoint?.hiddenLabel || snapPoint?.label);
     }
     return `${value}${setting.unit || '%'}`;
   }
@@ -1623,7 +1641,7 @@ export default class Settings {
     if (!this.menuBtn.classList.contains('is-loading')) return;
 
     this.menuBtn.classList.remove('is-loading');
-    this.settingsMenuBtnTooltipText.textContent = '環境光設定';
+    this.settingsMenuBtnTooltipText.textContent = t('環境光設定');
 
     this.showUpdatesMessage();
   };
@@ -1632,9 +1650,11 @@ export default class Settings {
     const message = ex?.message ?? typeof ex;
     if (this.menuBtn?.classList?.contains?.('is-loading')) {
       this.menuBtn.classList.add('has-warning');
-      this.settingsMenuBtnTooltipText.textContent = `環境光載入失敗：\n${message}`;
+      this.settingsMenuBtnTooltipText.textContent = t('環境光載入失敗：\n{message}', {
+        message,
+      });
     } else {
-      this.setWarning(`發生錯誤：\n${message}`, true);
+      this.setWarning(t('發生錯誤：\n{message}', { message }), true);
     }
   };
 
@@ -1776,7 +1796,10 @@ export default class Settings {
         valueElem.classList.add('is-controlled-by-setting');
         valueElem.setAttribute(
           'title',
-          `由「${controlledByLabel}」設定控制。\n手動調整此設定會關閉「${controlledByLabel}」`
+          t(
+            '由「{controlledByLabel}」設定控制。\n手動調整此設定會關閉「{controlledByLabel}」',
+            { controlledByLabel: t(controlledByLabel) }
+          )
         );
       } else {
         valueElem.classList.remove('is-controlled-by-setting');
@@ -1883,6 +1906,12 @@ export default class Settings {
 
     if (updateUI) {
       this.updateUI(name);
+    }
+
+    // The interface is translated when the settings are loaded
+    if (name === 'language' && !dontSave) {
+      this.setWarning(t('語言已變更，頁面即將重新載入⋯'));
+      setTimeout(() => this.reloadPage(), 1200);
     }
   }
 
@@ -1995,14 +2024,14 @@ export default class Settings {
     } catch (ex) {
       if (ex.message.includes('QuotaExceededError')) {
         this.setWarning(
-          '設定變更太頻繁，無法儲存。\n請稍候幾秒⋯'
+          t('設定變更太頻繁，無法儲存。\n請稍候幾秒⋯')
         );
         return;
       }
 
       if (ex.message === 'uninstalled') {
         this.setWarning(
-          '擴充功能已經更新，無法儲存變更。\n請重新整理網頁以載入更新後的擴充功能。'
+          t('擴充功能已經更新，無法儲存變更。\n請重新整理網頁以載入更新後的擴充功能。')
         );
         return;
       }
@@ -2091,8 +2120,9 @@ export default class Settings {
 
       this.updateItemElem.style.display = '';
       this.menuBtn.classList.toggle('has-updates', true);
-      this.menuBtn.title =
-        '環境光已更新並加入新設定\n點擊查看更新內容';
+      this.menuBtn.title = t(
+        '環境光已更新並加入新設定\n點擊查看更新內容'
+      );
       this.showingUpdatesMessage = true;
     } catch (ex) {
       ErrorReporter.captureException(ex);

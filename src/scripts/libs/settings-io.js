@@ -6,6 +6,7 @@
  */
 import SettingsConfig from './settings-config';
 import { storage } from './storage';
+import { t } from './i18n';
 
 const SETTING_PREFIX = 'setting-';
 
@@ -39,7 +40,7 @@ export const buildSettingsExportObject = async () => {
   }
 
   if (!Object.keys(exportObject).length)
-    throw new Error('沒有可以匯出的設定。所有設定都還是預設值。');
+    throw new Error(t('沒有可以匯出的設定。所有設定都還是預設值。'));
 
   // Temporarely export the setting blur2 as blur
   // https://github.com/WesselKroos/youtube-ambilight/issues/191#issuecomment-1703792823
@@ -63,7 +64,7 @@ export const parseSettingsImport = (jsonString) => {
 
   let importedObject = JSON.parse(jsonString);
   if (!importedObject || typeof importedObject !== 'object')
-    throw new Error('找不到可以匯入的設定');
+    throw new Error(t('找不到可以匯入的設定'));
 
   // Temporarely import the setting blur as blur2
   // https://github.com/WesselKroos/youtube-ambilight/issues/191#issuecomment-1703792823
@@ -81,9 +82,10 @@ export const parseSettingsImport = (jsonString) => {
     const setting = SettingsConfig.find((setting) => setting.name === name);
     if (!setting) {
       warnings.push(
-        `已略過「${name}」：${JSON.stringify(
-          value
-        )}。此設定可能已在更新後被移除或改名。`
+        t('已略過「{name}」：{value}。此設定可能已在更新後被移除或改名。', {
+          name,
+          value: JSON.stringify(value),
+        })
       );
       continue;
     }
@@ -92,39 +94,52 @@ export const parseSettingsImport = (jsonString) => {
     if (type === 'checkbox' || type === 'section') {
       if (typeof value !== 'boolean') {
         warnings.push(
-          `已略過「${name}」：${JSON.stringify(value)} 不是布林值。`
+          t('已略過「{name}」：{value} 不是布林值。', {
+            name,
+            value: JSON.stringify(value),
+          })
         );
         continue;
       }
     } else if (type === 'list') {
       if (typeof value !== 'number') {
         warnings.push(
-          `已略過「${name}」：${JSON.stringify(value)} 不是數字。`
+          t('已略過「{name}」：{value} 不是數字。', {
+            name,
+            value: JSON.stringify(value),
+          })
         );
         continue;
       }
       const valueRoundingLeft = ((value - min) * 1000) % (step * 1000);
       if (valueRoundingLeft !== 0) {
         warnings.push(
-          `已將「${name}」向下取整：${JSON.stringify(
-            value
-          )} 不是${min === undefined ? '' : `從 ${min} 開始、`}以 ${step} 為間隔的值。`
+          t('已將「{name}」向下取整：{value} 不是{min}以 {step} 為間隔的值。', {
+            name,
+            value: JSON.stringify(value),
+            min: min === undefined ? '' : t('從 {min} 開始、', { min }),
+            step,
+          })
         );
         value = Math.round(value * 1000 - valueRoundingLeft) / 1000;
       }
       if (min !== undefined && value < min) {
         warnings.push(
-          `已調整「${name}」：${JSON.stringify(
-            value
-          )} 低於最小值 ${min}。`
+          t('已調整「{name}」：{value} 低於最小值 {min}。', {
+            name,
+            value: JSON.stringify(value),
+            min,
+          })
         );
         value = min;
       }
       if (max !== undefined && value > max) {
         warnings.push(
-          `已調整「${name}」：${JSON.stringify(
-            value
-          )} 高於最大值 ${max}。`
+          t('已調整「{name}」：{value} 高於最大值 {max}。', {
+            name,
+            value: JSON.stringify(value),
+            max,
+          })
         );
         value = max;
       }
@@ -134,7 +149,7 @@ export const parseSettingsImport = (jsonString) => {
   }
 
   if (!Object.keys(settings).length)
-    throw new Error('找不到可以匯入的設定');
+    throw new Error(t('找不到可以匯入的設定'));
 
   return { settings, warnings };
 };

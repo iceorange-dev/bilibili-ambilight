@@ -2,57 +2,57 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="utf-8" />
-  <title>Bilibili 環境光設定</title>
+  <title data-i18n="Bilibili 環境光設定">Bilibili 環境光設定</title>
   <link rel="stylesheet" href="styles/options.css">
 </head>
 
 <body>
   <main>
-    <h1>Bilibili 環境光</h1>
+    <h1 data-i18n="Bilibili 環境光">Bilibili 環境光</h1>
     <p>
-      設定選單在影片播放器裡：<br/>
-      點擊 Bilibili 播放器右下角控制列中，設定（齒輪）按鈕左邊的環境光按鈕。
+      <span data-i18n="設定選單在影片播放器裡：">設定選單在影片播放器裡：</span><br/>
+      <span data-i18n="點擊 Bilibili 播放器右下角控制列中，設定（齒輪）按鈕左邊的環境光按鈕。">點擊 Bilibili 播放器右下角控制列中，設定（齒輪）按鈕左邊的環境光按鈕。</span>
     </p>
 
-    <h2>找不到設定按鈕</h2>
+    <h2 data-i18n="找不到設定按鈕">找不到設定按鈕</h2>
     <p>
-      請重新整理瀏覽器中的網頁。<br/><br/>
-      <i>如果重新整理後還是沒有出現設定按鈕，可以開啟瀏覽器的 Console（按 F12），搜尋以「Bilibili 環境光」開頭的錯誤或警告。</i>
+      <span data-i18n="請重新整理瀏覽器中的網頁。">請重新整理瀏覽器中的網頁。</span><br/><br/>
+      <i data-i18n="如果重新整理後還是沒有出現設定按鈕，可以開啟瀏覽器的 Console（按 F12），搜尋以「Bilibili 環境光」開頭的錯誤或警告。">如果重新整理後還是沒有出現設定按鈕，可以開啟瀏覽器的 Console（按 F12），搜尋以「Bilibili 環境光」開頭的錯誤或警告。</i>
     </p>
-    <h2>排解效能問題</h2>
+    <h2 data-i18n="排解效能問題">排解效能問題</h2>
     <p>
-      請參考原版擴充功能的<a id="troubleshootLink" href="#" target="_blank" rel="noopener">疑難排解指南</a>（英文）來解決效能問題。
+      <span data-i18n="請參考原版擴充功能的">請參考原版擴充功能的</span><a id="troubleshootLink" href="#" target="_blank" rel="noopener" data-i18n="疑難排解指南">疑難排解指南</a><span data-i18n="（英文）來解決效能問題。">（英文）來解決效能問題。</span>
     </p>
 
-    <h2>匯入／匯出設定</h2>
+    <h2 data-i18n="匯入／匯出設定">匯入／匯出設定</h2>
     <div id="importExportStatus" class="import-export-status"></div>
     <div id="importExportStatusDetails" class="import-export-status-details" tabindex="0"></div>
-    <h3>檔案</h3>
+    <h3 data-i18n="檔案">檔案</h3>
     <p>
-      <button id="exportFileBtn">匯出成檔案</button>
-      <button id="importFileBtn">從檔案匯入</button>
+      <button id="exportFileBtn" data-i18n="匯出成檔案">匯出成檔案</button>
+      <button id="importFileBtn" data-i18n="從檔案匯入">從檔案匯入</button>
       <input hidden name="import-settings-file" type="file" accept=".json"/>
     </p>
-    <h3>雲端儲存空間（你的瀏覽器帳號）</h3>
+    <h3 data-i18n="雲端儲存空間（你的瀏覽器帳號）">雲端儲存空間（你的瀏覽器帳號）</h3>
     <p>
-      <button id="exportAccountBtn">匯出到雲端</button>
-      <button id="importAccountBtn" disabled>從雲端匯入</button>
+      <button id="exportAccountBtn" data-i18n="匯出到雲端">匯出到雲端</button>
+      <button id="importAccountBtn" disabled data-i18n="從雲端匯入">從雲端匯入</button>
     </p>
     <p>
       <div id="importableAccountStatus" class="importable-account-status"></div>
     </p>
 
-    <h2>隱私</h2>
-    <p>
+    <h2 data-i18n="隱私">隱私</h2>
+    <p data-i18n="這個擴充功能不會傳送任何資料到任何地方。錯誤只會記錄在網頁的 Console 中。">
       這個擴充功能不會傳送任何資料到任何地方。錯誤只會記錄在網頁的 Console 中。
     </p>
 
-    <h2>致謝</h2>
+    <h2 data-i18n="致謝">致謝</h2>
     <p>
-      改編自 Wessel Kroos 的 <a id="originalProjectLink" href="#" target="_blank" rel="noopener">Ambient light for YouTube&trade;</a>（MIT 授權）。<br/>
-      原始碼：<a href="https://github.com/iceorange-dev/bilibili-ambilight" target="_blank" rel="noopener">github.com/iceorange-dev/bilibili-ambilight</a>
+      <span data-i18n="改編自 Wessel Kroos 的">改編自 Wessel Kroos 的</span> <a id="originalProjectLink" href="#" target="_blank" rel="noopener">Ambient light for YouTube&trade;</a><span data-i18n="（MIT 授權）。">（MIT 授權）。</span><br/>
+      <span data-i18n="原始碼：">原始碼：</span><a href="https://github.com/iceorange-dev/bilibili-ambilight" target="_blank" rel="noopener">github.com/iceorange-dev/bilibili-ambilight</a>
     </p>
-    <p>
+    <p data-i18n="本擴充功能為非官方作品，與嗶哩嗶哩（Bilibili）及 YouTube 無關。">
       本擴充功能為非官方作品，與嗶哩嗶哩（Bilibili）及 YouTube 無關。
     </p>
   </main>

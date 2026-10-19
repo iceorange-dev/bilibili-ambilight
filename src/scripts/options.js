@@ -6,6 +6,7 @@ import {
   parseSettingsImport,
 } from './libs/settings-io';
 import { on } from './libs/generic';
+import { applyTranslations, resolveLocale, setLocale, t } from './libs/i18n';
 
 document.querySelector('#originalProjectLink').href = originalProjectLink;
 document.querySelector('#troubleshootLink').href = troubleshootLink;
@@ -14,6 +15,14 @@ const importExportStatus = document.querySelector('#importExportStatus');
 const importExportStatusDetails = document.querySelector(
   '#importExportStatusDetails'
 );
+
+// The language of the interface is stored like every other setting
+(async () => {
+  const language = await storage.get('setting-language');
+  setLocale(resolveLocale(language));
+  applyTranslations();
+})();
+
 let importWarnings = [];
 const importSettings = async (storageName, importJson) => {
   try {
@@ -23,42 +32,50 @@ const importSettings = async (storageName, importJson) => {
     importExportStatusDetails.scrollTo(0, 0);
 
     const jsonString = await importJson();
-    if (!jsonString) throw new Error('找不到可以匯入的設定');
+    if (!jsonString) throw new Error(t('找不到可以匯入的設定'));
 
     const { settings, warnings } = parseSettingsImport(jsonString);
     importWarnings = warnings;
 
     await storage.set(settings);
 
-    importExportStatus.textContent = `已從${storageName}匯入 ${
-      Object.keys(settings).length
-    } 項設定。
-（請重新整理已開啟的 Bilibili 分頁來套用新的設定）${
-      importWarnings.length
-        ? `\n\n有 ${importWarnings.length} 個警告：\n- ${importWarnings.join(
-            '\n- '
-          )}`
-        : ''
-    }`;
+    importExportStatus.textContent = t(
+      '已從{storageName}匯入 {count} 項設定。\n（請重新整理已開啟的 Bilibili 分頁來套用新的設定）{warnings}',
+      {
+        storageName,
+        count: Object.keys(settings).length,
+        warnings: importWarnings.length
+          ? t('\n\n有 {count} 個警告：\n- {warnings}', {
+              count: importWarnings.length,
+              warnings: importWarnings.join('\n- '),
+            })
+          : '',
+      }
+    );
     if (importWarnings.length) {
       importExportStatus.classList.add('has-error');
     }
     importWarnings = [];
 
-    importExportStatusDetails.textContent = `查看匯入的設定（點擊展開）\n注意：blur 設定在內部會轉換成 blur2\n\n${Object.keys(
-      settings
-    )
-      .map(
-        (key) =>
-          `${key.substring('setting-'.length)}: ${JSON.stringify(
-            settings[key]
-          )}`
-      )
-      .join('\n')}`;
+    importExportStatusDetails.textContent = t(
+      '查看匯入的設定（點擊展開）\n注意：blur 設定在內部會轉換成 blur2\n\n{settings}',
+      {
+        settings: Object.keys(settings)
+          .map(
+            (key) =>
+              `${key.substring('setting-'.length)}: ${JSON.stringify(
+                settings[key]
+              )}`
+          )
+          .join('\n'),
+      }
+    );
   } catch (ex) {
     console.error('Failed to import settings', ex);
     importExportStatus.classList.add('has-error');
-    importExportStatus.textContent = `無法匯入設定：\n${ex?.message}`;
+    importExportStatus.textContent = t('無法匯入設定：\n{error}', {
+      error: ex?.message,
+    });
   }
 };
 const exportSettings = async (storageName, exportJson) => {
@@ -72,18 +89,24 @@ const exportSettings = async (storageName, exportJson) => {
 
     const jsonString = JSON.stringify(exportObject, null, 2);
     await exportJson(jsonString);
-    importExportStatus.textContent = `已匯出 ${
-      Object.keys(exportObject).length
-    } 項設定${storageName ? `到${storageName}` : ''}`;
-    importExportStatusDetails.textContent = `查看匯出的設定（點擊展開）\n\n${Object.keys(
-      exportObject
-    )
-      .map((key) => `${key}: ${JSON.stringify(exportObject[key])}`)
-      .join('\n')}`;
+    importExportStatus.textContent = t('已匯出 {count} 項設定{where}', {
+      count: Object.keys(exportObject).length,
+      where: storageName ? t('到{storageName}', { storageName }) : '',
+    });
+    importExportStatusDetails.textContent = t(
+      '查看匯出的設定（點擊展開）\n\n{settings}',
+      {
+        settings: Object.keys(exportObject)
+          .map((key) => `${key}: ${JSON.stringify(exportObject[key])}`)
+          .join('\n'),
+      }
+    );
   } catch (ex) {
     console.error('Failed to export settings', ex);
     importExportStatus.classList.add('has-error');
-    importExportStatus.textContent = `無法匯出設定：\n${ex?.message}`;
+    importExportStatus.textContent = t('無法匯出設定：\n{error}', {
+      error: ex?.message,
+    });
   }
 };
 
@@ -92,7 +115,7 @@ const importFileInput = document.querySelector('[name="import-settings-file"]');
 on(importFileInput, 'change', async () => {
   if (!importFileInput.files.length) return;
 
-  await importSettings('檔案', async () => {
+  await importSettings(t('檔案'), async () => {
     return await new Promise((resolve, reject) => {
       try {
         const reader = new FileReader();
@@ -119,7 +142,7 @@ on(exportFileButton, 'click', async () => {
     link.setAttribute('download', 'ambient-light-for-bilibili-settings.json');
     link.setAttribute(
       'title',
-      '如果自動下載被封鎖：\n1. 在這個連結上按右鍵\n2. 點選「另存連結為⋯」'
+      t('如果自動下載被封鎖：\n1. 在這個連結上按右鍵\n2. 點選「另存連結為⋯」')
     );
     link.style.display = 'block';
     link.style.marginTop = '0';
@@ -136,14 +159,14 @@ on(exportFileButton, 'click', async () => {
 
 const importAccountButton = document.querySelector('#importAccountBtn');
 on(importAccountButton, 'click', async () => {
-  await importSettings('雲端儲存空間', async () => {
+  await importSettings(t('雲端儲存空間'), async () => {
     return await syncStorage.get('settings');
   });
 });
 
 const exportAccountButton = document.querySelector('#exportAccountBtn');
 on(exportAccountButton, 'click', async () => {
-  await exportSettings('雲端儲存空間', async (jsonString) => {
+  await exportSettings(t('雲端儲存空間'), async (jsonString) => {
     await syncStorage.set('settings', jsonString);
     await syncStorage.set('settings-date', new Date().toJSON());
   });
@@ -156,7 +179,13 @@ const updateImportableAccountStatus = async () => {
   const jsonString = await syncStorage.get('settings-date');
   if (jsonString) {
     const settingsDate = new Date(jsonString);
-    importableAccountStatus.textContent = `上次匯出到雲端的時間：${settingsDate.toLocaleDateString()} ${settingsDate.toLocaleTimeString()}`;
+    importableAccountStatus.textContent = t(
+      '上次匯出到雲端的時間：{date} {time}',
+      {
+        date: settingsDate.toLocaleDateString(),
+        time: settingsDate.toLocaleTimeString(),
+      }
+    );
     importAccountButton.disabled = false;
   } else {
     importableAccountStatus.textContent = '';

@@ -8,6 +8,7 @@ import {
 import ErrorReporter from './libs/errors/reporter';
 import Ambientlight from './libs/ambientlight';
 import Settings from './libs/settings';
+import { t } from './libs/i18n';
 
 setErrorHandler((ex) => ErrorReporter.captureException(ex));
 
@@ -141,7 +142,9 @@ const loadAmbientlight = async () => {
     await Settings.getStoredSettingsCached();
   } catch (ex) {
     setWarning(
-      `無法載入先前的設定，請重新整理網頁再試一次。${'\n'}更新擴充功能後可能會發生這種情況。${'\n\n'}${ex?.toString()}`
+      t('無法載入先前的設定，請重新整理網頁再試一次。\n更新擴充功能後可能會發生這種情況。\n\n{error}', {
+        error: ex?.toString(),
+      })
     );
 
     if (
