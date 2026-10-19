@@ -398,9 +398,11 @@ export const watchStyleElement = () => {
     if (injectedStyleElem && !injectedStyleElem.isConnected)
       document.documentElement.appendChild(injectedStyleElem);
   });
+  // The style element is a child of <html>, so its removal is a change of the
+  // children of <html>. Observing the subtree would run this for every change
+  // of the page, like every danmaku.
   observer.observe(document.documentElement, {
     childList: true,
-    subtree: true,
   });
   return observer;
 };

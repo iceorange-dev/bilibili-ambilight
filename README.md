@@ -24,11 +24,12 @@
 
 1. 安裝使用者腳本管理器：[Tampermonkey](https://www.tampermonkey.net/)（Chrome / Edge / Firefox）、[Violentmonkey](https://violentmonkey.github.io/) 或 Greasemonkey
 2. 安裝腳本：
-   - 直接點安裝網址（Raw）：`https://raw.githubusercontent.com/iceorange-dev/bilibili-ambilight/main/bilibili-ambilight.user.js`
+   - 直接點安裝網址（Raw）：`https://raw.githubusercontent.com/iceorange-dev/bilibili-ambilight/userscript/bilibili-ambilight.user.js`
      - 如果連不上 `raw.githubusercontent.com`（例如在中國大陸），可以改用 jsDelivr 鏡像：
-       `https://cdn.jsdelivr.net/gh/iceorange-dev/bilibili-ambilight@main/bilibili-ambilight.user.js`
-     - 這個檔案是由 `npm run build:userscript` 產生的；如果 `main` 分支上還沒有它（例如這個 PR 還沒合併，或你在自己的 fork 上），把網址裡的 `iceorange-dev`／`main` 換成實際的 repo 與分支即可
-   - 或自己建置（見下方），再把 `bilibili-ambilight.user.js` 拖進瀏覽器，或在管理器中新增腳本後貼上內容
+       `https://cdn.jsdelivr.net/gh/iceorange-dev/bilibili-ambilight@userscript/bilibili-ambilight.user.js`
+     - 管理器會從安裝時的網址檢查更新，所以用哪個網址安裝，之後就會從哪個網址更新
+     - `userscript` 分支只放正式版本：每次發佈新版時由 CI 建置並更新
+   - 或自己建置（見下方），再把 `bilibili-ambilight.user.js` 拖進瀏覽器，或在管理器中新增腳本後貼上內容（這樣安裝的不會自動更新）
 3. 重新整理 Bilibili 影片頁面
 
 Chrome / Chromium 核心的瀏覽器請確認已開啟擴充功能的「開發人員模式」，以及在管理器中允許使用者腳本執行（詳見 [Tampermonkey 官方說明](https://www.tampermonkey.net/faq.php#Q209)）。
@@ -58,7 +59,7 @@ npm run build
 
 Firefox：改用 `npm run build:firefox` 建置（Firefox 的 manifest 需要 `background.scripts`，Chrome 則只接受 `background.service_worker`），再開啟 `about:debugging#/runtime/this-firefox` →「載入暫用附加元件」→ 選擇 `dist/manifest.json`。
 
-使用者腳本：`npm run build:userscript` 會把整個擴充功能打包成單一檔案 `bilibili-ambilight.user.js`（建置產物，會提交進 repo 以便直接安裝）。它會把樣式表與除雜訊貼圖（`src/images/noise-*.png`）內嵌進檔案，所以檔案比較大（約 1.5 MB）。
+使用者腳本：`npm run build:userscript` 會把整個擴充功能打包成單一檔案 `bilibili-ambilight.user.js`（建置產物，不會提交進 repo；正式版本由 CI 發佈到 Release 與 `userscript` 分支）。它會把樣式表與除雜訊貼圖（`src/images/noise-*.png`）內嵌進檔案，所以檔案比較大（約 1.5 MB）。
 
 ## 使用方式
 

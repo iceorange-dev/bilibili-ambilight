@@ -86,5 +86,27 @@ jobs:
           **Chrome / Edge**：下載 `-chrome.zip` 並解壓縮，開啟 `chrome://extensions`，打開「開發人員模式」，點「載入未封裝項目」並選擇解壓縮後的資料夾。
 
           **Firefox**：下載 `-firefox.zip`，開啟 `about:debugging#/runtime/this-firefox`，點「載入暫用附加元件」並選擇 zip 檔。這個版本沒有經過 Mozilla 簽署，重新啟動 Firefox 後會被移除。
+
+          **使用者腳本（Tampermonkey 等）**：請用 README 裡的安裝連結安裝，之後才會自動更新。直接安裝這裡的 `bilibili-ambilight.user.js` 不會自動更新。
           EOF
           )"
+
+      # The install links of the userscript point to this branch (directly and through the jsDelivr mirror),
+      # so that userscript managers only update to released versions.
+      - name: Publish the userscript to the userscript branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir userscript
+          cp release/bilibili-ambilight.user.js userscript/
+          cd userscript
+          git init -q -b userscript
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add bilibili-ambilight.user.js
+          git commit -q -m "Userscript $GITHUB_REF_NAME"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" userscript
+
+      - name: Purge the jsDelivr cache of the userscript
+        continue-on-error: true
+        run: curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@userscript/bilibili-ambilight.user.js"
